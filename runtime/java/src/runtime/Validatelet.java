@@ -40,6 +40,16 @@ public class Validatelet implements ContentHandler {
      */
     private boolean hadError =false;
 
+    /**
+     * Once an error is detected, we set this value to >0,
+     * and count down for each successful successive matches.
+     * We will start reporting errors again once this counter hits 0.
+     *
+     * The net effect is that we won't report a new error unless
+     * we know that we are back in sync with the document.
+     */
+    private int errorRecoveryCountDown = 0;
+
 //
 // attributes
 //
@@ -305,11 +315,18 @@ public class Validatelet implements ContentHandler {
             printIndent();
             debug.println(MessageFormat.format("{0} => {1}",new Object[]{currentState,newState}));
         }
+
+        errorCountDown();
         if(newState==State.emptySet) {
             newState = error(false);
             newState = factory.makeAfter(State.emptySet,newState);
         }
         setCurrentState(newState);
+    }
+
+    private void errorCountDown() {
+        if(errorRecoveryCountDown>0)
+            errorRecoveryCountDown--;
     }
 
     public void endElement(String nsUri, String localName, String qname) throws SAXException {
@@ -337,6 +354,7 @@ public class Validatelet implements ContentHandler {
             printIndent();
             debug.println(MessageFormat.format("{0} => {1}",new Object[]{currentState,newState}));
         }
+        errorCountDown();
         if(newState==State.emptySet)
             newState = error(true);
         setCurrentState(newState);
@@ -381,21 +399,24 @@ public class Validatelet implements ContentHandler {
             // so we need to create a different state
             state = currentState.endElement(attributes[depth],State.emptySet,factory,true);
 
-        StringBuffer buf = new StringBuffer("validation error. Expecting: ");
-        boolean first = true;
-        for (Iterator itr = tokens.iterator(); itr.hasNext();) {
-            Object o = itr.next();
-            if(!first) {
-                buf.append(',');
+        if(errorRecoveryCountDown==0) {
+            StringBuffer buf = new StringBuffer("validation error. Expecting: ");
+            boolean first = true;
+            for (Iterator itr = tokens.iterator(); itr.hasNext();) {
+                Object o = itr.next();
+                if(!first) {
+                    buf.append(',');
+                }
+                first = false;
+                buf.append(o);
             }
-            first = false;
-            buf.append(o);
+
+            SAXParseException e = new SAXParseException(buf.toString(),locator);
+            if(errorHandler!=null)
+                errorHandler.error(e);
         }
 
-        SAXParseException e = new SAXParseException(buf.toString(),locator);
-        if(errorHandler!=null)
-            errorHandler.error(e);
-
+        errorRecoveryCountDown = 5;
         return state;
     }
 
