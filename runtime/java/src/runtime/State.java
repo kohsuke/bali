@@ -35,8 +35,16 @@ public abstract class State {
      *      1   text is ignorable. calling the text method
      *          is guaranteed to return the same state.
      *      2   state is sensitive to the contents of text token.
+     *
+     * @see #TEXT_WHITESPACE_ONLY
+     * @see #TEXT_IGNORABLE
+     * @see #TEXT_SENSITIVE
      */
     public final int textSensitivity;
+
+    public static final int TEXT_WHITESPACE_ONLY = 0;
+    public static final int TEXT_IGNORABLE = 1;
+    public static final int TEXT_SENSITIVE = 2;
     
     /**
      * The cached return value from the endElementFast method.
@@ -131,10 +139,7 @@ public abstract class State {
     
     
     
-    public static final int TEXT_WHITESPACE_ONLY = 0;
-    public static final int TEXT_IGNORABLE = 1;
-    public static final int TEXT_SENSITIVE = 2;
-    
+
     /**
      * Returns true if the expand method can return some
      * other states. If this method returns false, the expand
