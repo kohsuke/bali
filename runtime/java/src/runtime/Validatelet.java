@@ -211,7 +211,7 @@ public class Validatelet implements ContentHandler {
         switch(textSensitivity) {
         case State.TEXT_WHITESPACE_ONLY:
             if( !isTextBufferIgnorable ) {
-                error(false);
+                setCurrentState(error(false));
                 isTextBufferIgnorable = true;
             }
             // fall through next block
@@ -246,9 +246,8 @@ public class Validatelet implements ContentHandler {
 //            }
             
             if(newState==State.emptySet)
-                error(false);
-            else
-                setCurrentState(newState);
+                newState = error(false);
+            setCurrentState(newState);
             resetTextBuffer();
             break;
             
@@ -305,10 +304,11 @@ public class Validatelet implements ContentHandler {
             printIndent();
             debug.println(MessageFormat.format("{0} => {1}",new Object[]{currentState,newState}));
         }
-        if(newState==State.emptySet)
-            error(false);
-        else
-            setCurrentState(newState);
+        if(newState==State.emptySet) {
+            newState = error(false);
+            newState = factory.makeAfter(State.emptySet,newState);
+        }
+        setCurrentState(newState);
     }
 
     public void endElement(String nsUri, String localName, String qname) throws SAXException {
@@ -337,9 +337,8 @@ public class Validatelet implements ContentHandler {
             debug.println(MessageFormat.format("{0} => {1}",new Object[]{currentState,newState}));
         }
         if(newState==State.emptySet)
-            error(true);
-        else
-            setCurrentState(newState);
+            newState = error(true);
+        setCurrentState(newState);
     }
 
 
@@ -372,7 +371,7 @@ public class Validatelet implements ContentHandler {
      * @param endElement
      *      if true, we recover from a premature end element.
      */
-    private void error(boolean endElement) throws SAXException {
+    private State error(boolean endElement) throws SAXException {
         Set tokens = new TreeSet();
 
         State state = currentState.recoverFromError(currentState,factory,tokens,nameCodes);
@@ -396,7 +395,7 @@ public class Validatelet implements ContentHandler {
         if(errorHandler!=null)
             errorHandler.error(e);
 
-        setCurrentState(state);
+        return state;
     }
 
     protected final NameCodeMap.Entry getNameCode( String uri, String localName ) {

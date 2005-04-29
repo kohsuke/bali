@@ -32,7 +32,7 @@ final class StateFactory {
      */
     State makeChoice( State block, State primitive ) {
         if(primitive instanceof State.Choice)
-            throw new InternalError("primitive is also a choice");  // a bug in the algorithm
+            throw new InternalError(primitive+" is also a choice");  // a bug in the algorithm
         
         if( block==State.emptySet )
             return primitive;
