@@ -125,7 +125,7 @@ public final class BaliSchema {
             String local = nameLiterals.substring(0,idx);
             nameLiterals = nameLiterals.substring(idx+1);
             
-            nameMap.put( new StringPair(uri,local), new Integer(code) );
+            nameMap.put( new String[]{uri,local}, new Integer(code) );
         }
         
         this.nameLiterals = Collections.unmodifiableMap(nameMap);
@@ -391,27 +391,6 @@ public final class BaliSchema {
     /** Default name code if a name is not found in the dictionary. */
     /*package*/ final int defaultNameCode;
     
-    /**
-     * Immutable (URI,local name) pair. 
-     */
-    static final class StringPair {
-        public final String uri;
-        public final String local;
-        
-        StringPair( String uri, String local ) {
-            this.uri=uri;
-            this.local=local;
-        }
-        
-        public final boolean equals( Object o ) {
-            StringPair rhs = (StringPair)o;
-            return this.uri.equals(rhs.uri) && this.local.equals(rhs.local);
-        }
-        
-        public final int hashCode() {
-            return uri.hashCode() ^ local.hashCode();
-        }
-    }
 
 //    /**
 //     * Looks up a name code from an (uri,local) pair.

@@ -35,10 +35,11 @@ public class Validatelet implements ContentHandler {
     /** True if the text in the text buffer is ignorable. */
     private boolean isTextBufferIgnorable = true;
 
+    /**
+     * Set to true once we see an error.
+     */
     private boolean hadError =false;
 
-//    private Schema.StringPair stringPair = new Schema.StringPair("","");
-    
 //
 // attributes
 //
@@ -63,10 +64,10 @@ public class Validatelet implements ContentHandler {
         for (Iterator itr = schema.nameLiterals.entrySet().iterator(); itr.hasNext();) {
             Map.Entry e = (Map.Entry) itr.next();
             
-            BaliSchema.StringPair key = (BaliSchema.StringPair)e.getKey();
+            String[] key = (String[])e.getKey();
             Integer value = (Integer)e.getValue();
             
-            nameCodes.put(key.uri, key.local, value.intValue());
+            nameCodes.put(key[0], key[1], value.intValue());
         }
 
         defaultNameCode = new NameCodeMap.Entry(
